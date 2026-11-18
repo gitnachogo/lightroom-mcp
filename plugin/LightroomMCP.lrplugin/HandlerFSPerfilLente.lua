@@ -1,4 +1,4 @@
--- Fotosintesis (prototipo): perfil de lente por foto con escala de vineta propia.
+-- Fotosintesis: perfil de lente por foto con escala de vineta propia.
 --
 -- Lightroom solo conserva una escala de vineta propia con LensProfileSetup = "Custom" y el perfil
 -- nombrado (Name + Filename + Digest); con "LensDefaults"/"Auto" manda el valor por defecto de la lente.
@@ -19,6 +19,7 @@ local function leerUna(photo)
     local out = { id = photo.localIdentifier }
     out.lente = photo:getFormattedMetadata('lens')
     out.camara = photo:getFormattedMetadata('cameraModel')
+    out.marca = photo:getFormattedMetadata('cameraMake')
     if type(settings) == 'table' then
         for _, k in ipairs(CAMPOS) do out[k] = settings[k] end
     end

@@ -34,7 +34,10 @@ local function photo(id)
     return {
         localIdentifier = id,
         getDevelopSettings = function() return SETTINGS[id] end,
-        getFormattedMetadata = function(_, key) return key == 'lens' and LENSES[id] or 'ILCE-7M4' end,
+        getFormattedMetadata = function(_, key)
+            if key == 'lens' then return LENSES[id] end
+            return key == 'cameraMake' and 'SONY' or 'ILCE-7M4'
+        end,
         applyDevelopSettings = function(_, s, history)
             assert(catalog.inWrite, 'applyDevelopSettings outside write access')
             catalog.applied[#catalog.applied + 1] = { id = id, history = history }
@@ -85,8 +88,8 @@ class PerfilLente(unittest.TestCase):
     def test_leer_solo_lectura(self):
         r = self.h.leer(self.t({'photo_ids': [1, 99]}))
         f = r['photos'][1]
-        self.assertEqual((f['id'], f['lente'], f['LensProfileSetup'], f['LensProfileVignettingScale']),
-                         (1, 'FE 35mm F1.8', 'Custom', 8))
+        self.assertEqual((f['id'], f['lente'], f['marca'], f['camara'], f['LensProfileSetup'], f['LensProfileVignettingScale']),
+                         (1, 'FE 35mm F1.8', 'SONY', 'ILCE-7M4', 'Custom', 8))
         self.assertIsNone(f['Exposure2012'])  # solo devuelve campos de lente
         self.assertEqual(list(r['missing'].values()), ['99'])
         self.assertEqual(self.world['writes'], 0)
