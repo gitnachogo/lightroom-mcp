@@ -59,6 +59,8 @@ end
 local function ajustesDe(item, i)
     if type(item) ~= 'table' then error(string.format('items[%d] must be an object', i)) end
     local modo = item.modo or 'custom'
+    -- Medido en vivo (18/11/2026): solo resuelve el perfil tras un render y si la foto no lleva ya
+    -- LensProfileName; con nombre, Lightroom vuelve a Custom con ese nombre.
     if modo == 'lens_defaults' then
         return { LensProfileEnable = 1, LensProfileSetup = 'LensDefaults' }
     end
