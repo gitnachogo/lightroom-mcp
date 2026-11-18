@@ -4,10 +4,14 @@ local LrSelection = import 'LrSelection'
 local LrTasks = import 'LrTasks'
 
 local Log = require 'Log'
+local PhotoSources = require 'PhotoSources'
 
 local DevelopSession = {}
 
 local SELECT_TIMEOUT_SECONDS = 10
+-- A photo in the active source is selected within a fraction of a second, so a
+-- short first try is enough before switching to the photo's own folder.
+local QUICK_SELECT_SECONDS = 2
 local RESELECT_SECONDS = 1
 local POLL_SECONDS = 0.1
 local PHOTO_SETTLE_SECONDS = 0.5
@@ -45,10 +49,11 @@ end
 
 local retryUntil = DevelopSession.retryUntil
 
-local function selectAndWait(catalog, photo, selection)
+local function selectAndWait(catalog, photo, selection, timeoutSeconds)
     return retryUntil(
         function() return catalog:getTargetPhoto() == photo end,
-        function() catalog:setSelectedPhotos(photo, selection) end)
+        function() catalog:setSelectedPhotos(photo, selection) end,
+        timeoutSeconds)
 end
 
 local function selectionMatches(catalog, photo, selection)
@@ -76,10 +81,26 @@ local function selectNoneAndWait(catalog)
     end, function() LrSelection.selectNone() end)
 end
 
+-- Selects the photo in the active source, then in its own folder, and only then
+-- in All Photographs, which takes tens of seconds to load on a large catalog.
+-- state.switchedSource tells restoreView to restore the sources; once in All
+-- Photographs every photo is reachable, so a later miss is final.
 function DevelopSession.activate(catalog, photo, state)
-    if selectAndWait(catalog, photo, { photo }) then return true end
-    if state.switchedSource then return false end
+    local inAll = state.allPhotos
+    if selectAndWait(catalog, photo, { photo }, inAll and SELECT_TIMEOUT_SECONDS or QUICK_SELECT_SECONDS) then
+        return true
+    end
+    if inAll then return false end
+    local found, folders = LrTasks.pcall(PhotoSources.folders, catalog, { photo })
+    if found and folders then
+        state.switchedSource = true
+        if LrTasks.pcall(function() catalog:setActiveSources(folders) end)
+            and selectAndWait(catalog, photo, { photo }) then
+            return true
+        end
+    end
     state.switchedSource = true
+    state.allPhotos = true
     local ok = LrTasks.pcall(function() catalog:setActiveSources({ catalog.kAllPhotos }) end)
     if not ok then return false end
     return selectAndWait(catalog, photo, { photo })
