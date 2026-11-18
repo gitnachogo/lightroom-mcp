@@ -44,6 +44,7 @@ local function setup(opts)
         LrApplicationView = { getCurrentModuleName = function() return "library" end, switchToModule = function() end },
         LrDevelopController = {},
         LrPathUtils = { parent = function(path) return (path:gsub("/[^/]*$", "")) end },
+        LrFileUtils = { exists = function() return not opts.offline and "directory" end },
         LrSelection = { selectNone = function() active, selected = nil, {} end },
         LrTasks = { pcall = pcall, sleep = function(seconds) clock.now = clock.now + seconds end },
         LrLogger = helper.defaultLrLogger(),
@@ -94,6 +95,15 @@ describe("DevelopSession.activate", function()
         assert.is_true(DevelopSession.activate(catalog, p.first, state))
         assert.are.same({ "all photographs" }, calls.sources)
         assert.is_true(state.switchedSource and state.allPhotos)
+    end)
+
+    it("goes straight to All Photographs when the folder is on an unmounted drive", function()
+        local DevelopSession, catalog, calls, _, p = setup({ offline = true })
+        local state = {}
+
+        assert.is_true(DevelopSession.activate(catalog, p.first, state))
+        assert.are.same({ "all photographs" }, calls.sources)
+        assert.are.same({}, calls.folderLookups)
     end)
 
     it("falls back to All Photographs when the photo stays hidden in its folder", function()
