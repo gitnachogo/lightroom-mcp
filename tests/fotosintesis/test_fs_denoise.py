@@ -73,6 +73,8 @@ class EstadoDenoise(unittest.TestCase):
             4: {'FilterList': {'Filters': [SIN_DIGEST]}},
             5: {'FilterList': {'Filters': [PLANTILLA, CALCULADO]}},
             6: {'FilterList': 'raro'},
+            7: {'FilterList': {}},
+            8: {'FilterList': {'Filters': 'raro'}},
         })
         self.lua.execute(MOCK)
         self.h = self.lua.execute((PLUGIN / 'HandlerFSDenoise.lua').read_text(encoding='utf-8'))
@@ -90,10 +92,10 @@ class EstadoDenoise(unittest.TestCase):
         return r, {f['id']: f for f in r['photos'].values()}
 
     def test_clasifica_sin_escribir(self):
-        r, f = self.estados([1, 2, 3, 4, 5, 6, 99])
+        r, f = self.estados([1, 2, 3, 4, 5, 6, 7, 8, 99])
         self.assertEqual({k: v['estado'] for k, v in f.items()},
                          {1: 'sin_denoise', 2: 'plantilla', 3: 'calculado', 4: 'desconocido',
-                          5: 'desconocido', 6: 'desconocido'})
+                          5: 'desconocido', 6: 'desconocido', 7: 'sin_denoise', 8: 'desconocido'})
         self.assertEqual((f[2]['ancho_destino'], f[2]['alto_destino'], f[2]['ancho_foto'], f[2]['ajustes']),
                          (6048, 4024, 7008, 'BACB0284'))
         self.assertEqual((f[3]['ancho_destino'], f[3]['filtros'][1]['imagenes'], f[3]['filtros'][1]['group_digest']),

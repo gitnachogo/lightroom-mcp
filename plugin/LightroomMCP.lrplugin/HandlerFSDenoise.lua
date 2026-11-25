@@ -58,8 +58,9 @@ local function leerUna(photo)
     end
     local settings = photo:getDevelopSettings()
     local lista = type(settings) == 'table' and settings.FilterList
-    local filtros = type(lista) == 'table' and lista.Filters
-    if lista ~= nil and type(filtros) ~= 'table' then
+    local filtros = type(lista) == 'table' and lista.Filters or nil
+    -- Una foto sin filtros guarda FilterList = {} (sin Filters).
+    if (lista ~= nil and type(lista) ~= 'table') or (filtros ~= nil and type(filtros) ~= 'table') then
         out.estado = 'desconocido'
         return out
     end
