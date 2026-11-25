@@ -43,6 +43,7 @@ local HandlerMaskCreate = require 'HandlerMaskCreate'
 local HandlerMaskBatch = require 'HandlerMaskBatch'
 local HandlerMaskCombine = require 'HandlerMaskCombine'
 local HandlerFSPerfilLente = require 'HandlerFSPerfilLente'
+local HandlerFSDenoise = require 'HandlerFSDenoise'
 local Log = require 'Log'
 
 local DEFAULT_REQUEST_PORT = 58763
@@ -251,6 +252,8 @@ local DISPATCH = {
     match_photo_style = HandlerDevelop.matchPhotoStyle,
     fs_leer_perfil_lente = HandlerFSPerfilLente.leer,
     fs_fijar_perfil_lente = HandlerFSPerfilLente.fijar,
+    fs_estado_denoise = HandlerFSDenoise.estado,
+    fs_actualizar_ia = HandlerFSDenoise.actualizarIA,
     set_develop_settings = HandlerDevelop.setDevelopSettings,
     set_process_version = HandlerDevelop.setProcessVersion,
     list_develop_snapshots = HandlerSnapshots.list,
